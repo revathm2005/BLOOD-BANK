@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blood Bank Management System | Project 14</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- TOP NOTIFICATION TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm backdrop-blur-md bg-white/95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand / Logo -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-700 to-red-500 flex items-center justify-center text-white shadow-md shadow-red-200 animate-pulse-gentle">
+            <i class="fa-solid fa-droplet text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-extrabold text-xl text-slate-900 tracking-tight font-outfit">LifePulse</h1>
+              <span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-bold">FSD Project 14</span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium hidden sm:block">Blood Bank Management System</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center space-x-1">
+          <button class="nav-tab active flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition" data-tab="dashboard">
+            <i class="fa-solid fa-chart-pie text-red-600"></i> Dashboard
+          </button>
+          <button class="nav-tab flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 transition" data-tab="donors">
+            <i class="fa-solid fa-users text-blue-600"></i> Donors
+          </button>
+          <button class="nav-tab flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 transition" data-tab="stock">
+            <i class="fa-solid fa-boxes-stacked text-amber-600"></i> Blood Stock
+          </button>
+          <button class="nav-tab flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 transition" data-tab="requests">
+            <i class="fa-solid fa-hospital-user text-purple-600"></i> Hospital Requests
+          </button>
+          <button class="nav-tab flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 transition" data-tab="schema">
+            <i class="fa-solid fa-database text-emerald-600"></i> SQL Schema
+          </button>
+        </nav>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button onclick="openModal('newDonorModal')" class="bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold shadow-sm shadow-red-200 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-user-plus"></i> <span class="hidden sm:inline">Add</span> Donor
+          </button>
+          <button onclick="openModal('newRequestModal')" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus-circle"></i> <span class="hidden sm:inline">Blood</span> Request
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Bar -->
+    <div class="md:hidden flex overflow-x-auto border-t border-slate-100 px-3 py-2 gap-2 bg-slate-50 text-xs">
+      <button class="nav-tab active px-3 py-1.5 rounded-md font-bold whitespace-nowrap" data-tab="dashboard">Dashboard</button>
+      <button class="nav-tab px-3 py-1.5 rounded-md font-bold text-slate-600 whitespace-nowrap" data-tab="donors">Donors</button>
+      <button class="nav-tab px-3 py-1.5 rounded-md font-bold text-slate-600 whitespace-nowrap" data-tab="stock">Blood Stock</button>
+      <button class="nav-tab px-3 py-1.5 rounded-md font-bold text-slate-600 whitespace-nowrap" data-tab="requests">Requests</button>
+      <button class="nav-tab px-3 py-1.5 rounded-md font-bold text-slate-600 whitespace-nowrap" data-tab="schema">Schema</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: DASHBOARD -->
+    <!-- ======================================================== -->
+    <section id="tab-dashboard" class="tab-content active space-y-8">
+      <!-- Greeting Banner -->
+      <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-red-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div class="relative z-10">
+          <span class="inline-block bg-white/20 text-white text-xs px-2.5 py-1 rounded-full font-semibold mb-2">Live Operations Center</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold font-outfit tracking-tight">Blood Bank Management Dashboard</h2>
+          <p class="text-red-100 text-sm max-w-xl mt-1">Real-time tracking of blood inventory, voluntary donors, and emergency hospital supplies.</p>
+        </div>
+        <div class="flex items-center gap-3 relative z-10">
+          <button onclick="resetDemoData()" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition backdrop-blur-sm flex items-center gap-2">
+            <i class="fa-solid fa-arrows-rotate"></i> Reset Demo Data
+          </button>
+          <button onclick="loadDashboard()" class="bg-white text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-md transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+        <!-- Decorative bg circle -->
+        <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+      </div>
+
+      <!-- KPI METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Total Donors -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Registered Donors</span>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <i class="fa-solid fa-users text-lg"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span id="metric-donors" class="text-3xl font-extrabold text-slate-900 font-outfit">--</span>
+            <span class="text-xs text-emerald-600 font-semibold flex items-center"><i class="fa-solid fa-heart mr-1"></i> active</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Table: <code class="text-slate-700 bg-slate-100 px-1 py-0.5 rounded font-mono">donors</code></p>
+        </div>
+
+        <!-- Total Stock Units -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Available Units</span>
+            <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+              <i class="fa-solid fa-droplet text-lg"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span id="metric-units" class="text-3xl font-extrabold text-red-600 font-outfit">--</span>
+            <span class="text-xs text-slate-500 font-medium">units stored</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Table: <code class="text-slate-700 bg-slate-100 px-1 py-0.5 rounded font-mono">blood_stock</code></p>
+        </div>
+
+        <!-- Pending Requests -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Requests</span>
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <i class="fa-solid fa-clock text-lg"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span id="metric-pending" class="text-3xl font-extrabold text-amber-600 font-outfit">--</span>
+            <span class="text-xs text-amber-600 font-semibold">requires action</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Table: <code class="text-slate-700 bg-slate-100 px-1 py-0.5 rounded font-mono">blood_requests</code></p>
+        </div>
+
+        <!-- Fulfilled Requests -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Fulfilled Issues</span>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <i class="fa-solid fa-circle-check text-lg"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span id="metric-fulfilled" class="text-3xl font-extrabold text-emerald-600 font-outfit">--</span>
+            <span class="text-xs text-emerald-600 font-semibold">dispatched</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Status: <span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-medium">Fulfilled</span></p>
+        </div>
+      </div>
+
+      <!-- BLOOD INVENTORY STATUS (8 Blood Groups Grid) -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-900 font-outfit flex items-center gap-2">
+              <i class="fa-solid fa-vial-virus text-red-600"></i> Real-time Blood Stock by Group
+            </h3>
+            <p class="text-xs text-slate-500">Automatically updated upon new donations and hospital dispatches</p>
+          </div>
+          <button onclick="switchTab('stock')" class="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1">
+            Manage Stock Details <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Stock Cards Grid -->
+        <div id="stockCardsGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mt-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- DUAL RECENT ACTIVITY SECTIONS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Hospital Requests -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <i class="fa-solid fa-truck-medical text-purple-600"></i> Recent Hospital Requests
+              </h3>
+              <button onclick="switchTab('requests')" class="text-xs font-semibold text-purple-600 hover:text-purple-700">View All</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="text-slate-400 font-semibold uppercase border-b border-slate-100 pb-2">
+                    <th class="py-2">Hospital</th>
+                    <th class="py-2">Group</th>
+                    <th class="py-2">Units</th>
+                    <th class="py-2">Status</th>
+                    <th class="py-2 text-right">Quick Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recentRequestsBody" class="divide-y divide-slate-100">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+            <button onclick="openModal('newRequestModal')" class="text-xs font-bold text-slate-700 hover:text-red-600 flex items-center gap-1.5">
+              <i class="fa-solid fa-plus-circle"></i> Create New Hospital Request
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Registered Donors -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <i class="fa-solid fa-hand-holding-heart text-red-600"></i> Recently Registered Donors
+              </h3>
+              <button onclick="switchTab('donors')" class="text-xs font-semibold text-red-600 hover:text-red-700">View All</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="text-slate-400 font-semibold uppercase border-b border-slate-100 pb-2">
+                    <th class="py-2">Name</th>
+                    <th class="py-2">Age / Gender</th>
+                    <th class="py-2">Group</th>
+                    <th class="py-2">Contact</th>
+                    <th class="py-2 text-right">Donate</th>
+                  </tr>
+                </thead>
+                <tbody id="recentDonorsBody" class="divide-y divide-slate-100">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+            <button onclick="openModal('newDonorModal')" class="text-xs font-bold text-slate-700 hover:text-red-600 flex items-center gap-1.5">
+              <i class="fa-solid fa-user-plus"></i> Register Another Donor
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: DONORS MANAGEMENT -->
+    <!-- ======================================================== -->
+    <section id="tab-donors" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-outfit flex items-center gap-2.5">
+            <span class="p-2 rounded-xl bg-blue-50 text-blue-600"><i class="fa-solid fa-users"></i></span>
+            Donor Management
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">Manage voluntary blood donors and record live donation transactions</p>
+        </div>
+        <button onclick="openModal('newDonorModal')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-red-200 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-user-plus"></i> Register New Donor
+        </button>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+          <input type="text" id="donorSearchInput" oninput="filterDonors()" placeholder="Search donor by name or phone..." class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Group:</label>
+          <select id="donorGroupFilter" onchange="filterDonors()" class="bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-red-500">
+            <option value="ALL">All Blood Groups</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+          <button onclick="resetDonorFilters()" class="text-xs text-slate-500 hover:text-slate-800 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100" title="Reset Filters">
+            <i class="fa-solid fa-arrow-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Donors Data Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                <th class="py-3.5 px-4">ID</th>
+                <th class="py-3.5 px-4">Donor Name</th>
+                <th class="py-3.5 px-4">Age</th>
+                <th class="py-3.5 px-4">Gender</th>
+                <th class="py-3.5 px-4">Blood Group</th>
+                <th class="py-3.5 px-4">Phone Number</th>
+                <th class="py-3.5 px-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="donorsTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="donorsEmptyState" class="hidden p-12 text-center text-slate-400">
+          <i class="fa-solid fa-user-slash text-4xl mb-3 text-slate-300"></i>
+          <p class="font-bold text-slate-600">No donors found matching criteria</p>
+          <p class="text-xs text-slate-400 mt-1">Try clearing your search filters or add a new donor.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: BLOOD STOCK INVENTORY -->
+    <!-- ======================================================== -->
+    <section id="tab-stock" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-outfit flex items-center gap-2.5">
+            <span class="p-2 rounded-xl bg-amber-50 text-amber-600"><i class="fa-solid fa-boxes-stacked"></i></span>
+            Blood Stock Inventory
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">Direct inventory of units available, last updated timestamps, and manual stock updates</p>
+        </div>
+        <button onclick="loadStockTable()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3.5 py-2 rounded-xl text-sm flex items-center gap-2">
+          <i class="fa-solid fa-arrows-rotate"></i> Reload Stock
+        </button>
+      </div>
+
+      <!-- Stock Table matching blood_stock schema -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                <th class="py-3.5 px-4">Stock ID</th>
+                <th class="py-3.5 px-4">Blood Group</th>
+                <th class="py-3.5 px-4">Units Available</th>
+                <th class="py-3.5 px-4">Stock Status</th>
+                <th class="py-3.5 px-4">Last Updated</th>
+                <th class="py-3.5 px-4 text-center">Stock Adjustment</th>
+              </tr>
+            </thead>
+            <tbody id="stockTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Compatibility Matrix Reference Card -->
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-md">
+        <h3 class="font-extrabold text-base font-outfit flex items-center gap-2 text-rose-400 mb-3">
+          <i class="fa-solid fa-circle-nodes"></i> Blood Type Compatibility Quick Reference Guide
+        </h3>
+        <p class="text-xs text-slate-300 mb-4">Vital reference for emergency issue transactions and donor triage:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <span class="font-extrabold text-rose-400 text-sm">O- (Universal Red Cell)</span>
+            <p class="text-slate-300 mt-1">Can donate red blood cells to <strong>ANY</strong> blood type (A+, A-, B+, B-, AB+, AB-, O+, O-).</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <span class="font-extrabold text-amber-400 text-sm">AB+ (Universal Recipient)</span>
+            <p class="text-slate-300 mt-1">Can receive red blood cells from <strong>ANY</strong> blood type.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <span class="font-extrabold text-blue-400 text-sm">Rh Factor Compatibility</span>
+            <p class="text-slate-300 mt-1">Negative types (-ve) can safely donate to positive (+ve) types, but positive cannot donate to negative.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <span class="font-extrabold text-emerald-400 text-sm">Stock Thresholds</span>
+            <p class="text-slate-300 mt-1">Green: &ge; 10 units | Yellow: 5 - 9 units | Red: &lt; 5 units (Critical shortage alert)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: HOSPITAL BLOOD REQUESTS -->
+    <!-- ======================================================== -->
+    <section id="tab-requests" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-outfit flex items-center gap-2.5">
+            <span class="p-2 rounded-xl bg-purple-50 text-purple-600"><i class="fa-solid fa-hospital-user"></i></span>
+            Hospital Blood Requests
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">Manage blood requisition from registered hospitals, approve, and fulfill stock issues</p>
+        </div>
+        <button onclick="openModal('newRequestModal')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-sm text-sm flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle"></i> Create Hospital Request
+        </button>
+      </div>
+
+      <!-- Status Filter Tabs -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="filterRequests('ALL')" class="req-filter-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 transition" data-status="ALL">All Requests</button>
+        <button onclick="filterRequests('Pending')" class="req-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-amber-50 transition" data-status="Pending">
+          <i class="fa-solid fa-clock text-amber-500 mr-1"></i> Pending
+        </button>
+        <button onclick="filterRequests('Approved')" class="req-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-blue-50 transition" data-status="Approved">
+          <i class="fa-solid fa-circle-check text-blue-500 mr-1"></i> Approved
+        </button>
+        <button onclick="filterRequests('Fulfilled')" class="req-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-emerald-50 transition" data-status="Fulfilled">
+          <i class="fa-solid fa-check-double text-emerald-500 mr-1"></i> Fulfilled
+        </button>
+        <button onclick="filterRequests('Rejected')" class="req-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-rose-50 transition" data-status="Rejected">
+          <i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i> Rejected
+        </button>
+      </div>
+
+      <!-- Requests Data Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                <th class="py-3.5 px-4">Request ID</th>
+                <th class="py-3.5 px-4">Hospital Name</th>
+                <th class="py-3.5 px-4">Blood Group</th>
+                <th class="py-3.5 px-4">Units Required</th>
+                <th class="py-3.5 px-4">Request Date</th>
+                <th class="py-3.5 px-4">Status</th>
+                <th class="py-3.5 px-4 text-center">Workflow Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="requestsEmptyState" class="hidden p-12 text-center text-slate-400">
+          <i class="fa-solid fa-inbox text-4xl mb-3 text-slate-300"></i>
+          <p class="font-bold text-slate-600">No requests found</p>
+          <p class="text-xs text-slate-400 mt-1">Submit a new blood request using the button above.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: SQL SCHEMA & PROJECT SPECS -->
+    <!-- ======================================================== -->
+    <section id="tab-schema" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-outfit flex items-center gap-2.5">
+            <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-database"></i></span>
+            Database Schema & SQL Commands
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">Exact table structures, fields, and SQL queries as defined in project specifications</p>
+        </div>
+        <button onclick="copySchemaSql()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-copy"></i> Copy SQL Queries
+        </button>
+      </div>
+
+      <!-- 3 Schema Table Spec Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Table 1: donors -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+            <h4 class="font-bold text-slate-900 font-mono text-base">donors</h4>
+          </div>
+          <ul class="text-xs font-mono space-y-2 text-slate-700">
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span class="text-red-600 font-bold">donor_id</span>
+              <span class="text-slate-500">INT PK AUTO_INCREMENT</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>name</span>
+              <span class="text-slate-500">VARCHAR(100)</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>age</span>
+              <span class="text-slate-500">INT</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>gender</span>
+              <span class="text-slate-500">VARCHAR(10)</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>blood_group</span>
+              <span class="text-slate-500">VARCHAR(5)</span>
+            </li>
+            <li class="flex justify-between">
+              <span>phone</span>
+              <span class="text-slate-500">VARCHAR(15)</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Table 2: blood_stock -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+            <h4 class="font-bold text-slate-900 font-mono text-base">blood_stock</h4>
+          </div>
+          <ul class="text-xs font-mono space-y-2 text-slate-700">
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span class="text-red-600 font-bold">stock_id</span>
+              <span class="text-slate-500">INT PK AUTO_INCREMENT</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>blood_group</span>
+              <span class="text-slate-500">VARCHAR(5) UNIQUE</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>units_available</span>
+              <span class="text-slate-500">INT</span>
+            </li>
+            <li class="flex justify-between">
+              <span>last_updated</span>
+              <span class="text-slate-500">DATE</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Table 3: blood_requests -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+            <h4 class="font-bold text-slate-900 font-mono text-base">blood_requests</h4>
+          </div>
+          <ul class="text-xs font-mono space-y-2 text-slate-700">
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span class="text-red-600 font-bold">request_id</span>
+              <span class="text-slate-500">INT PK AUTO_INCREMENT</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>hospital_name</span>
+              <span class="text-slate-500">VARCHAR(150)</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>blood_group</span>
+              <span class="text-slate-500">VARCHAR(5)</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>units_required</span>
+              <span class="text-slate-500">INT</span>
+            </li>
+            <li class="flex justify-between border-b border-slate-100 pb-1">
+              <span>request_date</span>
+              <span class="text-slate-500">DATE</span>
+            </li>
+            <li class="flex justify-between">
+              <span>status</span>
+              <span class="text-slate-500">VARCHAR(30)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Raw SQL Viewer -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-lg">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+          <span class="text-slate-400 font-mono flex items-center gap-2">
+            <i class="fa-solid fa-file-code text-emerald-400"></i> schema.sql (Ready for MySQL Workbench / MariaDB / SQLite)
+          </span>
+          <button onclick="copySchemaSql()" class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1">
+            <i class="fa-solid fa-copy"></i> Copy
+          </button>
+        </div>
+        <pre id="sqlViewer" class="mt-4 text-xs font-mono text-emerald-300/90 overflow-x-auto max-h-96 leading-relaxed">Loading schema.sql...</pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALS -->
+  <!-- ======================================================== -->
+
+  <!-- 1. ADD / EDIT DONOR MODAL -->
+  <div id="newDonorModal" class="modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+      <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center justify-between">
+        <h3 id="donorModalTitle" class="font-extrabold text-base font-outfit flex items-center gap-2">
+          <i class="fa-solid fa-user-plus"></i> Register New Donor
+        </h3>
+        <button onclick="closeModal('newDonorModal')" class="text-white/80 hover:text-white text-lg">&times;</button>
+      </div>
+      <form id="donorForm" onsubmit="handleDonorSubmit(event)" class="p-6 space-y-4">
+        <input type="hidden" id="donorId" value="">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name</label>
+          <input type="text" id="donorName" required placeholder="e.g. Ramesh Kumar" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Age</label>
+            <input type="number" id="donorAge" min="18" max="65" required placeholder="18 - 65" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Gender</label>
+            <select id="donorGender" required class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white focus:outline-none">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Blood Group</label>
+            <select id="donorBloodGroup" required class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl font-bold text-red-600 focus:ring-2 focus:ring-red-500 focus:bg-white focus:outline-none">
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Phone Number</label>
+            <input type="tel" id="donorPhone" required placeholder="10-digit mobile" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white focus:outline-none">
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('newDonorModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2 rounded-xl text-sm shadow-sm shadow-red-200">Save Donor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. CREATE HOSPITAL REQUEST MODAL -->
+  <div id="newRequestModal" class="modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+      <div class="bg-gradient-to-r from-purple-700 to-indigo-600 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-extrabold text-base font-outfit flex items-center gap-2">
+          <i class="fa-solid fa-hospital-user"></i> New Hospital Blood Requisition
+        </h3>
+        <button onclick="closeModal('newRequestModal')" class="text-white/80 hover:text-white text-lg">&times;</button>
+      </div>
+      <form id="requestForm" onsubmit="handleRequestSubmit(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Hospital / Clinic Name</label>
+          <input type="text" id="reqHospitalName" required placeholder="e.g. AIIMS Emergency Ward" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Blood Group</label>
+            <select id="reqBloodGroup" required class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl font-bold text-red-600 focus:ring-2 focus:ring-purple-500 focus:bg-white focus:outline-none">
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Units Required</label>
+            <input type="number" id="reqUnits" min="1" max="50" required value="1" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Request Date</label>
+          <input type="date" id="reqDate" required class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white focus:outline-none">
+        </div>
+        <div class="p-3 bg-purple-50 border border-purple-100 rounded-xl text-xs text-purple-800 flex items-start gap-2">
+          <i class="fa-solid fa-circle-info mt-0.5"></i>
+          <span>The request will initially be saved as <span class="font-bold">Pending</span>. You can then review available stock and issue/fulfill it.</span>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('newRequestModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-2 rounded-xl text-sm shadow-sm">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. RECORD DONATION MODAL -->
+  <div id="recordDonationModal" class="modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+      <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-extrabold text-base font-outfit flex items-center gap-2">
+          <i class="fa-solid fa-heart-pulse"></i> Record Blood Donation
+        </h3>
+        <button onclick="closeModal('recordDonationModal')" class="text-white/80 hover:text-white text-lg">&times;</button>
+      </div>
+      <form id="donationForm" onsubmit="handleDonationSubmit(event)" class="p-6 space-y-4">
+        <input type="hidden" id="donationDonorId">
+        <div class="p-3 bg-red-50 border border-red-100 rounded-xl">
+          <p class="text-xs text-slate-500 uppercase font-bold">Donor Information</p>
+          <p id="donationDonorName" class="font-bold text-slate-900 text-base mt-0.5">--</p>
+          <p class="text-xs text-slate-600 mt-1">Blood Group: <span id="donationBloodGroup" class="font-extrabold text-red-600 text-sm">--</span></p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Units Donated</label>
+          <input type="number" id="donationUnits" min="1" max="5" value="1" required class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white focus:outline-none">
+          <p class="text-xs text-slate-400 mt-1">Standard whole blood donation is 1 unit (approx 450-500 ml).</p>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('recordDonationModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2 rounded-xl text-sm shadow-sm shadow-red-200">Confirm & Add Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. ADJUST STOCK MODAL -->
+  <div id="adjustStockModal" class="modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+      <div class="bg-gradient-to-r from-amber-600 to-orange-500 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-extrabold text-base font-outfit flex items-center gap-2">
+          <i class="fa-solid fa-boxes-stacked"></i> Adjust Stock Units
+        </h3>
+        <button onclick="closeModal('adjustStockModal')" class="text-white/80 hover:text-white text-lg">&times;</button>
+      </div>
+      <form id="stockAdjustForm" onsubmit="handleStockAdjustSubmit(event)" class="p-6 space-y-4">
+        <input type="hidden" id="adjustBloodGroup">
+        <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 uppercase font-bold">Blood Group</p>
+            <p id="adjustGroupDisplay" class="font-extrabold text-red-600 text-xl font-outfit">--</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-slate-500 uppercase font-bold">Current Units</p>
+            <p id="adjustCurrentUnits" class="font-extrabold text-slate-900 text-xl font-outfit">--</p>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">New Units Available</label>
+          <input type="number" id="adjustNewUnits" min="0" required class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-none">
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('adjustStockModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2 rounded-xl text-sm shadow-sm">Save Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+        <span class="font-semibold text-slate-700">Project 14: Blood Bank Management System</span>
+      </div>
+      <p>Full Stack Development (FSD) &bull; Node.js + Express + SQLite / MySQL</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
